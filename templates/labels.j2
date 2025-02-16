@@ -1,0 +1,38 @@
+{% if overseerr_container_labels_traefik_enabled %}
+traefik.enable=true
+
+{% if overseerr_container_labels_traefik_docker_network %}
+traefik.docker.network={{ overseerr_container_labels_traefik_docker_network }}
+{% endif %}
+
+{% set middlewares = [] %}
+
+{% if overseerr_container_labels_traefik_path_prefix != '/' %}
+traefik.http.middlewares.{{ overseerr_identifier }}-slashless-redirect.redirectregex.regex=^({{ overseerr_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ overseerr_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
+{% set middlewares = middlewares + [overseerr_identifier + '-slashless-redirect'] %}
+{% endif %}
+
+{% if overseerr_container_labels_traefik_path_prefix != '/' %}
+traefik.http.middlewares.{{ overseerr_identifier }}-strip-prefix.stripprefix.prefixes={{ overseerr_container_labels_traefik_path_prefix }}
+{% set middlewares = middlewares + [overseerr_identifier + '-strip-prefix'] %}
+{% endif %}
+
+traefik.http.routers.{{ overseerr_identifier }}.rule={{ overseerr_container_labels_traefik_rule }}
+{% if overseerr_container_labels_traefik_priority | int > 0 %}
+traefik.http.routers.{{ overseerr_identifier }}.priority={{ overseerr_container_labels_traefik_priority }}
+{% endif %}
+traefik.http.routers.{{ overseerr_identifier }}.service={{ overseerr_identifier }}
+{% if middlewares | length > 0 %}
+traefik.http.routers.{{ overseerr_identifier }}.middlewares={{ middlewares | join(',') }}
+{% endif %}
+traefik.http.routers.{{ overseerr_identifier }}.entrypoints={{ overseerr_container_labels_traefik_entrypoints }}
+traefik.http.routers.{{ overseerr_identifier }}.tls={{ overseerr_container_labels_traefik_tls | to_json }}
+{% if overseerr_container_labels_traefik_tls %}
+traefik.http.routers.{{ overseerr_identifier }}.tls.certResolver={{ overseerr_container_labels_traefik_tls_certResolver }}
+{% endif %}
+
+traefik.http.services.{{ overseerr_identifier }}.loadbalancer.server.port={{ overseerr_container_webui_port }}
+{% endif %}
+
+{{ overseerr_container_labels_additional_labels }}

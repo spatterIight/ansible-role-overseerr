@@ -1,0 +1,25 @@
+---
+
+- name: Install Overseerr
+  tags:
+    - setup-all
+    - setup-overseerr
+    - install-all
+    - install-overseerr
+  block:
+    - name: Run Overseerr validation tasks
+      when: overseerr_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
+
+    - name: Run Overseerr installation tasks
+      when: overseerr_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+
+- name: Uninstall Overseerr
+  tags:
+    - setup-all
+    - setup-overseerr
+  block:
+    - name: Run Overseerr uninstallation tasks
+      when: not overseerr_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
