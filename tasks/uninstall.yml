@@ -1,0 +1,26 @@
+---
+
+- name: Check existence of Overseerr systemd service
+  ansible.builtin.stat:
+    path: "{{ devture_systemd_docker_base_systemd_path }}/{{ overseerr_identifier }}.service"
+  register: overseerr_service_stat
+
+- name: Uninstall Overseerr systemd services and files
+  when: overseerr_service_stat.stat.exists | bool
+  block:
+    - name: Ensure Overseerr systemd service is stopped
+      ansible.builtin.service:
+        name: "{{ overseerr_identifier }}"
+        state: stopped
+        enabled: false
+        daemon_reload: true
+
+    - name: Ensure Overseerr systemd service does not exist
+      ansible.builtin.file:
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ overseerr_identifier }}.service"
+        state: absent
+
+    - name: Ensure Overseerr path doesn't exist
+      ansible.builtin.file:
+        path: "{{ overseerr_base_path }}"
+        state: absent

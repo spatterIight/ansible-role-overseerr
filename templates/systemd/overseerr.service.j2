@@ -1,0 +1,61 @@
+#jinja2: lstrip_blocks: "True"
+[Unit]
+Description=Overseerr ({{ overseerr_identifier }})
+{% for service in overseerr_systemd_required_services_list %}
+Requires={{ service }}
+After={{ service }}
+{% endfor %}
+{% for service in overseerr_systemd_wanted_services_list %}
+Wants={{ service }}
+{% endfor %}
+
+[Service]
+Type=simple
+Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ overseerr_container_stop_grace_time_seconds }} {{ overseerr_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ overseerr_identifier }} 2>/dev/null || true'
+
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
+			--rm \
+			--name={{ overseerr_identifier }} \
+			--log-driver=none \
+			--user={{ overseerr_uid }}:{{ overseerr_gid }} \
+			--cap-drop=ALL \
+			--cap-add=SETUID \
+			--cap-add=SETGID \
+			--cap-add=CHOWN \
+			--cap-add=FOWNER \
+			--cap-add=DAC_OVERRIDE \
+			--read-only \
+			--network={{ overseerr_container_network }} \
+			{% if overseerr_container_http_bind_port %}
+			-p {{ overseerr_container_http_bind_port }}:{{ overseerr_container_http_port }} \
+			{% endif %}
+			--env-file={{ overseerr_base_path }}/env \
+			--label-file={{ overseerr_base_path }}/labels \
+			--mount type=bind,src={{ overseerr_data_path }},dst=/config \
+			{% for volume in overseerr_container_additional_volumes %}
+			--mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
+			{% endfor %}
+			# https://docs.linuxserver.io/misc/read-only/#how
+			--tmpfs=/run:rw,exec,nosuid,size=128m \
+			{% for arg in overseerr_container_extra_arguments %}
+			{{ arg }} \
+			{% endfor %}
+			{{ overseerr_container_image }}
+
+{% for network in overseerr_container_additional_networks %}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ overseerr_identifier }}
+{% endfor %}
+
+ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach {{ overseerr_identifier }}
+
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ overseerr_container_stop_grace_time_seconds }} {{ overseerr_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ overseerr_identifier }} 2>/dev/null || true'
+
+Restart=always
+RestartSec=30
+SyslogIdentifier={{ overseerr_identifier }}
+
+[Install]
+WantedBy=multi-user.target
