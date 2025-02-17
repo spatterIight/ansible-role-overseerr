@@ -32,7 +32,7 @@ traefik.http.routers.{{ overseerr_identifier }}.tls={{ overseerr_container_label
 traefik.http.routers.{{ overseerr_identifier }}.tls.certResolver={{ overseerr_container_labels_traefik_tls_certResolver }}
 {% endif %}
 
-traefik.http.services.{{ overseerr_identifier }}.loadbalancer.server.port={{ overseerr_container_webui_port }}
+traefik.http.services.{{ overseerr_identifier }}.loadbalancer.server.port={{ overseerr_container_http_port }}
 {% endif %}
 
 {{ overseerr_container_labels_additional_labels }}
