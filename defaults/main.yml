@@ -23,12 +23,6 @@ overseerr_path_prefix: /
 overseerr_base_path: "{{ overseerr_identifier }}"
 overseerr_data_path: "{{ overseerr_base_path }}/data"
 
-# The path where downloaded files will be stored on the host system
-overseerr_download_path: "{{ overseerr_base_path }}/downloads"
-
-# The path at which overseerr_download_path is mounted to inside the container
-overseerr_download_bind_path: "/downloads"
-
 overseerr_container_image: "{{ overseerr_container_image_registry_prefix }}linuxserver/overseerr:{{ overseerr_container_image_tag }}"
 overseerr_container_image_tag: "{{ overseerr_version }}"
 overseerr_container_image_registry_prefix: lscr.io/
