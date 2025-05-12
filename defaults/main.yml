@@ -10,6 +10,7 @@ overseerr_uid: ''
 overseerr_gid: ''
 overseerr_timezone: 'Etc/UTC'
 
+# renovate: datasource=docker depName=lscr.io/linuxserver/overseerr versioning=semver
 overseerr_version: 1.33.2
 overseerr_arch: amd64
 
