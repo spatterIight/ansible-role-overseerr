@@ -11,7 +11,7 @@ overseerr_gid: ''
 overseerr_timezone: 'Etc/UTC'
 
 # renovate: datasource=docker depName=lscr.io/linuxserver/overseerr versioning=semver
-overseerr_version: 1.34.0
+overseerr_version: 2021.12.12
 overseerr_arch: amd64
 
 # The hostname at which overseerr is served.
